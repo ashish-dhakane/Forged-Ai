@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: forgeai-backend
+  profiles:
+    active: h2
+
+  # Default in-memory H2 database configuration for instant demo & viva presentation
+  datasource:
+    url: jdbc:h2:mem:forgeaidb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# Security, JWT, and External Integration Properties
+app:
+  jwt:
+    # 256-bit secure secret key for signing JWT tokens
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    expiration-ms: 86400000 # 24 hours
+  cors:
+    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+  ai:
+    api-key: ${AI_API_KEY:}
+    provider: ${AI_PROVIDER:mock} # mock | openai | gemini
+    model: ${AI_MODEL:gpt-4o-mini}
+  github:
+    token: ${GITHUB_TOKEN:}
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+
+---
+# PostgreSQL Production Profile (activated via SPRING_PROFILES_ACTIVE=postgres)
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/forgeaidb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
