@@ -33,8 +33,9 @@ public class ProfileController {
     // Fetches full engineering profile details including projects, technologies, and academic experience.
     @GetMapping
     public ResponseEntity<Map<String, Object>> getProfile(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
-        User user = userRepository.findById(userId).orElse(new User("Ashish Sharma", "demo@forgeai.dev", "", "ashish-dhakane"));
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         List<Project> projects = projectRepository.findByUserId(userId);
 
@@ -44,9 +45,9 @@ public class ProfileController {
         response.put("email", user.getEmail());
         response.put("githubUsername", user.getGithubUsername());
         response.put("bio", user.getBio() != null ? user.getBio() : "Computer Science Student & Systems Engineer");
-        response.put("xp", user.getXp());
-        response.put("level", user.getLevel());
-        response.put("streak", user.getStreak());
+        response.put("xp", user.getXp() != null ? user.getXp() : 0);
+        response.put("level", user.getLevel() != null ? user.getLevel() : 1);
+        response.put("streak", user.getStreak() != null ? user.getStreak() : 0);
         response.put("skills", List.of("Java", "TypeScript", "Next.js", "Spring Boot", "PostgreSQL", "Docker", "REST APIs", "Git", "Redis"));
         response.put("technologies", List.of("Spring Security", "Hibernate", "Tailwind CSS", "JUnit 5", "Mockito", "JJWT", "Recharts"));
         response.put("languages", List.of(Map.of("name", "Java", "percentage", 50), Map.of("name", "TypeScript", "percentage", 35), Map.of("name", "SQL", "percentage", 15)));
@@ -60,20 +61,21 @@ public class ProfileController {
     // Returns the 6 core Engineer DNA dimensions for radar chart visualization along with AI commentary.
     @GetMapping("/dna")
     public ResponseEntity<Map<String, Object>> getEngineerDna(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
+        com.forgeai.dto.ScoreDto scoreDto = scoreCalculationService.getUserScoreDto(userId);
 
         List<Map<String, Object>> dimensions = List.of(
-                Map.of("dimension", "Builder", "score", 85, "fullMark", 100),
-                Map.of("dimension", "Debugger", "score", 62, "fullMark", 100),
-                Map.of("dimension", "Problem Solver", "score", 78, "fullMark", 100),
-                Map.of("dimension", "Architect", "score", 65, "fullMark", 100),
-                Map.of("dimension", "Security", "score", 60, "fullMark", 100),
-                Map.of("dimension", "Communicator", "score", 76, "fullMark", 100)
+                Map.of("dimension", "Builder", "score", Math.round(Math.max(scoreDto.getProjects(), scoreDto.getGithub())), "fullMark", 100),
+                Map.of("dimension", "Debugger", "score", Math.round(scoreDto.getDebugging()), "fullMark", 100),
+                Map.of("dimension", "Problem Solver", "score", Math.round((scoreDto.getProgramming() + scoreDto.getProblemSolving()) / 2.0), "fullMark", 100),
+                Map.of("dimension", "Architect", "score", Math.round(scoreDto.getSystemDesign()), "fullMark", 100),
+                Map.of("dimension", "Security", "score", Math.round(scoreDto.getSecurity()), "fullMark", 100),
+                Map.of("dimension", "Communicator", "score", Math.round(scoreDto.getCommunication()), "fullMark", 100)
         );
 
         Map<String, Object> response = new HashMap<>();
         response.put("dimensions", dimensions);
-        response.put("aiInsight", "Your profile shows strong Builder and Problem Solver tendencies, while Testing and System Design are priority areas for improvement to reach senior industry benchmarks.");
+        response.put("aiInsight", "Deterministic analysis indicates current competency level across the 6 core engineering DNA pillars.");
         response.put("isAiGenerated", true);
 
         return ResponseEntity.ok(response);

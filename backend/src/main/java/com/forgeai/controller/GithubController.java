@@ -24,7 +24,7 @@ public class GithubController {
     // Fetches all synchronized GitHub repositories for the authenticated user.
     @GetMapping("/repos")
     public ResponseEntity<List<RepositoryEntity>> getRepositories(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(githubService.getUserRepositories(userId));
     }
 
@@ -33,7 +33,7 @@ public class GithubController {
     public ResponseEntity<List<RepositoryEntity>> syncRepositories(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody(required = false) GithubSyncRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         String username = request != null ? request.getGithubUsername() : null;
         String token = request != null ? request.getToken() : null;
 
@@ -43,7 +43,7 @@ public class GithubController {
     // Aggregates a high-level GitHub snapshot with language distributions and activity metrics.
     @GetMapping("/snapshot")
     public ResponseEntity<Map<String, Object>> getGithubSnapshot(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         List<RepositoryEntity> repos = githubService.getUserRepositories(userId);
 
         Map<String, Integer> languageCounts = new HashMap<>();
@@ -58,16 +58,18 @@ public class GithubController {
         }
 
         List<Map<String, Object>> languages = new ArrayList<>();
-        languageCounts.forEach((lang, count) -> {
-            languages.add(Map.of("name", lang, "count", count, "percentage", Math.round(((double) count / Math.max(repos.size(), 1)) * 100)));
-        });
+        if (!repos.isEmpty()) {
+            languageCounts.forEach((lang, count) -> {
+                languages.add(Map.of("name", lang, "count", count, "percentage", Math.round(((double) count / repos.size()) * 100)));
+            });
+        }
 
         Map<String, Object> snapshot = new HashMap<>();
         snapshot.put("totalRepositories", repos.size());
         snapshot.put("totalStars", totalStars);
         snapshot.put("totalForks", totalForks);
         snapshot.put("languages", languages);
-        snapshot.put("recentActivity", List.of(
+        snapshot.put("recentActivity", repos.isEmpty() ? List.of() : List.of(
                 Map.of("day", "Mon", "commits", 4),
                 Map.of("day", "Tue", "commits", 7),
                 Map.of("day", "Wed", "commits", 3),

@@ -28,7 +28,7 @@ public class CodeReviewController {
     public ResponseEntity<CodeReviewResponse> analyzeCode(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody CodeReviewRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(codeReviewService.reviewCode(userId, request));
     }
 }

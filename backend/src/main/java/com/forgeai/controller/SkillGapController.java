@@ -26,14 +26,14 @@ public class SkillGapController {
     // Fetches all current skill gaps identified for the student.
     @GetMapping
     public ResponseEntity<List<SkillGap>> getSkillGaps(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(skillGapService.getSkillGapsForUser(userId));
     }
 
     // Triggers an algorithmic re-evaluation of skill gaps based on latest assessment and mission submissions.
     @PostMapping("/recalculate")
     public ResponseEntity<List<SkillGap>> recalculateSkillGaps(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(skillGapService.recalculateSkillGaps(userId));
     }
 }

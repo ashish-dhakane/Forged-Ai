@@ -21,10 +21,29 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long jwtExpirationMs;
 
+    // Documented development-only fallback key for zero-config viva evaluation
+    private static final String DEV_FALLBACK_SECRET = "ForgeAIDevOnlySecretKeyForVivaPresentation2026Min32Chars!";
+
     public JwtTokenProvider(
-            @Value("${app.jwt.secret}") String jwtSecret,
-            @Value("${app.jwt.expiration-ms}") long jwtExpirationMs) {
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            @Value("${app.jwt.secret:}") String jwtSecret,
+            @Value("${app.jwt.expiration-ms:86400000}") long jwtExpirationMs,
+            @Value("${spring.profiles.active:h2}") String activeProfile) {
+        
+        String effectiveSecret = jwtSecret != null ? jwtSecret.trim() : "";
+        boolean isProduction = "postgres".equalsIgnoreCase(activeProfile) || "prod".equalsIgnoreCase(activeProfile);
+
+        if (isProduction) {
+            if (effectiveSecret.length() < 32) {
+                throw new IllegalStateException("Production startup failed: APP_JWT_SECRET environment variable is missing or insecure (must be at least 32 characters/256-bit).");
+            }
+        } else {
+            if (effectiveSecret.length() < 32) {
+                logger.warn("APP_JWT_SECRET not provided or shorter than 32 characters. Activating documented development fallback key for local demo/viva mode.");
+                effectiveSecret = DEV_FALLBACK_SECRET;
+            }
+        }
+
+        this.key = Keys.hmacShaKeyFor(effectiveSecret.getBytes(StandardCharsets.UTF_8));
         this.jwtExpirationMs = jwtExpirationMs;
     }
 

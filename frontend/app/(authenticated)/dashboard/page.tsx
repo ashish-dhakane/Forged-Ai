@@ -120,7 +120,7 @@ export default function DashboardPage() {
           value={`${score.overallScore}/100`}
           subtitle="Weighted 10-dimension composite"
           icon={Award}
-          badge="Formula-Calculated"
+          badge={score.overallScore >= 75 ? "Mastery" : score.overallScore >= 50 ? "Proficient" : "Foundational"}
           badgeColor="blue"
         />
         <StatCard
@@ -128,23 +128,23 @@ export default function DashboardPage() {
           value={`${score.industryReadinessScore}/100`}
           subtitle="Hiring threshold benchmark: 75/100"
           icon={TrendingUp}
-          badge="Near Industry Ready"
+          badge={score.industryReadinessScore >= 75 ? "Industry Ready" : score.industryReadinessScore >= 50 ? "Near Ready" : "Building Skills"}
           badgeColor="emerald"
         />
         <StatCard
           title="XP & Growth Level"
-          value={`Level ${user?.level || 4}`}
-          subtitle={`${user?.xp || 2450} Total Experience Points`}
+          value={`Level ${user?.level ?? 1}`}
+          subtitle={`${user?.xp ?? 0} Total Experience Points`}
           icon={Zap}
-          badge="+150 XP Available"
+          badge={`Next Level: ${(user?.level ?? 1) * 500} XP`}
           badgeColor="amber"
         />
         <StatCard
           title="Consistency Streak"
-          value={`${user?.streak || 7} Days`}
+          value={`${user?.streak ?? 0} Days`}
           subtitle="Active daily learning momentum"
           icon={Flame}
-          badge="Top 10% Consistency"
+          badge={(user?.streak ?? 0) >= 5 ? "High Consistency" : (user?.streak ?? 0) > 0 ? "Active Streak" : "Start Today"}
           badgeColor="purple"
         />
       </div>
@@ -257,7 +257,7 @@ export default function DashboardPage() {
             <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
             <div>
               <div className="text-xs font-semibold text-white">Complete Unit Testing Mission</div>
-              <p className="text-[11px] text-slate-400 mt-0.5">Write JUnit 5 tests to raise Testing competency from 58 to 68.</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Write JUnit 5 tests to elevate your Testing competency (currently {score.testing}%).</p>
               <Link href="/missions" className="text-[11px] text-blue-400 hover:underline mt-2 inline-block font-medium">
                 Start Mission (+150 XP) →
               </Link>

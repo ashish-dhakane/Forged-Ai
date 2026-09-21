@@ -66,14 +66,20 @@ public class DebuggingService {
         int xpEarned = 0;
 
         if (isSuccessful) {
-            xpEarned = challenge.getXpReward();
-            feedback = "Excellent diagnosis! Your explanation accurately identified the defect mechanism, and your corrected code resolves the issue.";
+            boolean alreadySolved = previousAttempts.stream().anyMatch(DebuggingAttempt::getIsSuccessful);
+            if (!alreadySolved) {
+                xpEarned = challenge.getXpReward();
+                feedback = "Excellent diagnosis! Your explanation accurately identified the defect mechanism, and your corrected code resolves the issue.";
 
-            // Increment XP and level up if threshold crossed
-            int newXp = (user.getXp() != null ? user.getXp() : 0) + xpEarned;
-            user.setXp(newXp);
-            user.setLevel(Math.max(1, (newXp / 500) + 1));
-            userRepository.save(user);
+                // Increment XP and level up if threshold crossed
+                int newXp = (user.getXp() != null ? user.getXp() : 0) + xpEarned;
+                user.setXp(newXp);
+                user.setLevel(Math.max(1, (newXp / 500) + 1));
+                userRepository.save(user);
+            } else {
+                xpEarned = 0;
+                feedback = "Great diagnosis again! Your solution is verified. (XP already awarded previously for this challenge).";
+            }
 
             // Recomputes Engineering Score to reflect debugging progress
             scoreCalculationService.calculateAndSaveScores(userId);

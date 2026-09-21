@@ -28,7 +28,7 @@ public class InterviewController {
     public ResponseEntity<Interview> startInterview(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InterviewStartRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(interviewService.startInterview(userId, request));
     }
 
@@ -37,7 +37,7 @@ public class InterviewController {
     public ResponseEntity<InterviewAnswer> submitAnswer(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody InterviewAnswerRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(interviewService.submitAnswer(userId, request));
     }
 
@@ -46,7 +46,7 @@ public class InterviewController {
     public ResponseEntity<InterviewEvaluationResponse> evaluateInterview(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(interviewService.evaluateInterview(userId, id));
     }
 }

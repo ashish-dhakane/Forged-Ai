@@ -24,15 +24,17 @@ public class RoadmapController {
     // Fetches the active 5-phase personalized engineering roadmap for the student.
     @GetMapping
     public ResponseEntity<Roadmap> getRoadmap(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(roadmapService.getOrCreateUserRoadmap(userId));
     }
 
     // Updates progress percentage and milestone status for a specific roadmap item.
     @PatchMapping("/items/{id}/progress")
     public ResponseEntity<RoadmapItem> updateItemProgress(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id,
             @Valid @RequestBody RoadmapProgressUpdateRequest request) {
-        return ResponseEntity.ok(roadmapService.updateItemProgress(id, request));
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
+        return ResponseEntity.ok(roadmapService.updateItemProgress(userId, id, request));
     }
 }

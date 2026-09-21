@@ -65,6 +65,7 @@ public class AuthController {
         dto.setLevel(user.getLevel());
         dto.setStreak(user.getStreak());
         dto.setRole(user.getRole());
+        dto.setIsDemo("demo@forgeai.dev".equalsIgnoreCase(user.getEmail()));
         dto.setCreatedAt(user.getCreatedAt());
 
         return ResponseEntity.ok(dto);

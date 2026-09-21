@@ -32,7 +32,7 @@ public class MissionController {
     // Fetches the authenticated user's mission submissions and completed tasks.
     @GetMapping("/submissions")
     public ResponseEntity<List<MissionSubmission>> getUserSubmissions(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(missionService.getUserSubmissions(userId));
     }
 
@@ -42,7 +42,7 @@ public class MissionController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id,
             @Valid @RequestBody MissionSubmitRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(missionService.submitMission(userId, id, request));
     }
 }

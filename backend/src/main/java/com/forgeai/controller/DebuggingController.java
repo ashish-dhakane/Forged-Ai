@@ -41,7 +41,7 @@ public class DebuggingController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long id,
             @Valid @RequestBody DebuggingSubmitRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(debuggingService.submitFix(userId, id, request));
     }
 }

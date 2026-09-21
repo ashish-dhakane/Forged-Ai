@@ -15,8 +15,10 @@ import {
 import { getSkillGaps, recalculateSkillGaps } from '../../../services/skillGapService';
 import { SkillGap } from '../../../types';
 import DemoBadge from '../../../components/layout/DemoBadge';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function SkillGapsPage() {
+  const { user } = useAuth();
   const [gaps, setGaps] = useState<SkillGap[]>([]);
   const [loading, setLoading] = useState(true);
   const [recalculating, setRecalculating] = useState(false);
@@ -69,7 +71,7 @@ export default function SkillGapsPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-white">Skill Gap Detection Engine</h2>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Cross-analyzes GitHub commits, assessment scores, and completed missions against hiring benchmarks.

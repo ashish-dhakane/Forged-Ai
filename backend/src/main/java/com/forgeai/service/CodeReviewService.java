@@ -24,13 +24,17 @@ public class CodeReviewService {
 
     private final CodeReviewRepository codeReviewRepository;
     private final UserRepository userRepository;
+    private final ScoreCalculationService scoreCalculationService;
 
     @Value("${app.ai.api-key:}")
     private String aiApiKey;
 
-    public CodeReviewService(CodeReviewRepository codeReviewRepository, UserRepository userRepository) {
+    public CodeReviewService(CodeReviewRepository codeReviewRepository,
+                             UserRepository userRepository,
+                             ScoreCalculationService scoreCalculationService) {
         this.codeReviewRepository = codeReviewRepository;
         this.userRepository = userRepository;
+        this.scoreCalculationService = scoreCalculationService;
     }
 
     // Evaluates the code snippet, produces structured engineering feedback, and saves the review audit.
@@ -60,6 +64,9 @@ public class CodeReviewService {
                 entity.setPerformanceSuggestionsJson(String.join("||", response.getPerformanceSuggestions()));
                 entity.setRefactoredCode(response.getRefactoredCode());
                 codeReviewRepository.save(entity);
+
+                // Recalculates engineering score to factor in code review quality
+                scoreCalculationService.calculateAndSaveScores(user.getId());
             });
         }
 

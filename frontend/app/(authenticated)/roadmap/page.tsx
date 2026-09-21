@@ -16,8 +16,10 @@ import { getRoadmap, updateRoadmapItemProgress } from '../../../services/roadmap
 import { Roadmap, RoadmapItem } from '../../../types';
 import ProgressBar from '../../../components/ui/ProgressBar';
 import DemoBadge from '../../../components/layout/DemoBadge';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function RoadmapPage() {
+  const { user } = useAuth();
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -77,7 +79,7 @@ export default function RoadmapPage() {
               <span className="text-xs font-mono uppercase tracking-wider text-blue-400">
                 Target: {roadmap.targetRole}
               </span>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <h1 className="text-xl font-bold text-white mt-1">{roadmap.title}</h1>
             <p className="text-xs text-slate-400 mt-1">

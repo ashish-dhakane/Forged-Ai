@@ -25,8 +25,10 @@ import {
 import { getAnalyticsTrends, AnalyticsData } from '../../../services/analyticsService';
 import DemoBadge from '../../../components/layout/DemoBadge';
 import StatCard from '../../../components/ui/StatCard';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function AnalyticsPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-white">Engineering Growth Analytics</h2>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Historical progression trends tracking verified competency gains, XP rate, and consistency.

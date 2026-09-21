@@ -53,6 +53,8 @@ public class MissionService {
         MissionSubmission submission = submissionRepository.findByUserIdAndMissionId(userId, missionId)
                 .orElse(new MissionSubmission(user, mission, "IN_PROGRESS", request.getRepositoryUrl(), request.getSubmissionNotes()));
 
+        boolean wasAlreadyCompleted = submission.getId() != null && "COMPLETED".equalsIgnoreCase(submission.getStatus());
+
         submission.setStatus("COMPLETED");
         submission.setRepositoryUrl(request.getRepositoryUrl());
         submission.setSubmissionNotes(request.getSubmissionNotes());
@@ -60,11 +62,13 @@ public class MissionService {
 
         MissionSubmission savedSubmission = submissionRepository.save(submission);
 
-        // Awards XP reward and calculates level (1 level per 500 XP)
-        int newXp = (user.getXp() != null ? user.getXp() : 0) + mission.getXpReward();
-        user.setXp(newXp);
-        user.setLevel(Math.max(1, (newXp / 500) + 1));
-        userRepository.save(user);
+        if (!wasAlreadyCompleted) {
+            // Awards XP reward and calculates level (1 level per 500 XP)
+            int newXp = (user.getXp() != null ? user.getXp() : 0) + mission.getXpReward();
+            user.setXp(newXp);
+            user.setLevel(Math.max(1, (newXp / 500) + 1));
+            userRepository.save(user);
+        }
 
         // Triggers recalculation of the user's Engineering Score
         scoreCalculationService.calculateAndSaveScores(userId);

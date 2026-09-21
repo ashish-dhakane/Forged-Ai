@@ -41,14 +41,14 @@ public class AssessmentController {
     public ResponseEntity<AssessmentResultDto> submitAssessment(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Valid @RequestBody AssessmentSubmitRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(assessmentService.submitAssessment(userId, request));
     }
 
     // Returns completed assessment history and past score breakdowns for the user.
     @GetMapping("/results")
     public ResponseEntity<List<AssessmentResult>> getUserResults(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         return ResponseEntity.ok(assessmentService.getUserResults(userId));
     }
 }

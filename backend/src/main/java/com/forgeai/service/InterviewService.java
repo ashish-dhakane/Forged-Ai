@@ -62,6 +62,11 @@ public class InterviewService {
         InterviewQuestion question = questionRepository.findById(request.getQuestionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found: " + request.getQuestionId()));
 
+        if (question.getInterview() != null && question.getInterview().getUser() != null
+                && !question.getInterview().getUser().getId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not own this interview session");
+        }
+
         String answer = request.getUserAnswer().trim();
         double score = evaluateAnswerScore(answer, question.getIdealKeyPoints());
 
@@ -87,20 +92,29 @@ public class InterviewService {
         Interview interview = interviewRepository.findById(interviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interview not found: " + interviewId));
 
-        List<InterviewQuestion> questions = questionRepository.findByInterviewId(interviewId);
-        double avgScore = 76.0;
+        if (interview.getUser() != null && !interview.getUser().getId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not own this interview session");
+        }
 
-        double technicalScore = 78.0;
-        double communicationScore = 80.0;
-        double problemSolvingScore = 72.0;
-        double overallScore = (technicalScore * 0.45) + (problemSolvingScore * 0.35) + (communicationScore * 0.20);
+        List<InterviewQuestion> questions = questionRepository.findByInterviewId(interviewId);
+        double avgScore = questions.stream()
+                .map(q -> answerRepository.findByQuestionId(q.getId()))
+                .filter(java.util.Optional::isPresent)
+                .mapToDouble(opt -> opt.get().getScore())
+                .average()
+                .orElse(72.0);
+
+        double technicalScore = Math.min(100.0, Math.max(40.0, Math.round((avgScore + 2.0) * 10.0) / 10.0));
+        double communicationScore = Math.min(100.0, Math.max(40.0, Math.round((avgScore + 4.0) * 10.0) / 10.0));
+        double problemSolvingScore = Math.min(100.0, Math.max(40.0, Math.round((avgScore - 2.0) * 10.0) / 10.0));
+        double overallScore = Math.round(((technicalScore * 0.45) + (problemSolvingScore * 0.35) + (communicationScore * 0.20)) * 10.0) / 10.0;
 
         interview.setOverallScore(overallScore);
         interview.setTechnicalScore(technicalScore);
         interview.setCommunicationScore(communicationScore);
         interview.setProblemSolvingScore(problemSolvingScore);
         interview.setStatus("COMPLETED");
-        interview.setSummary("Demonstrated strong theoretical foundations and good clarity when discussing distributed architecture and data modeling.");
+        interview.setSummary("Demonstrated good clarity when discussing engineering concepts. Evaluated across technical depth, communication, and problem solving.");
         interviewRepository.save(interview);
 
         // Update student's engineering score

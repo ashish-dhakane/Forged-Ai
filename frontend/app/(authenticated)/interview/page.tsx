@@ -20,6 +20,7 @@ import {
 } from '../../../services/interviewService';
 import { Interview, InterviewEvaluation } from '../../../types';
 import DemoBadge from '../../../components/layout/DemoBadge';
+import { useAuth } from '../../../context/AuthContext';
 
 const roles = [
   'Software Engineer',
@@ -41,6 +42,7 @@ const categories = [
 ];
 
 export default function InterviewPage() {
+  const { user } = useAuth();
   const [role, setRole] = useState('Backend Developer');
   const [difficulty, setDifficulty] = useState('Intermediate');
   const [category, setCategory] = useState('Full Stack & System Architecture');
@@ -60,47 +62,51 @@ export default function InterviewPage() {
     setCurrentQIndex(0);
     setCurrentAnswer('');
     try {
-      const newInterview = await startInterview(role, difficulty, category);
-      setInterview(newInterview);
+      const started = await startInterview(role, difficulty, category);
+      setInterview(started);
     } catch (err) {
-      console.error('Failed to start interview:', err);
+      console.error('Failed to start interview round:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Submits the candidate's answer for the current question and advances.
-  const handleNextQuestion = async () => {
+  // Submits answer to active question and advances to next prompt.
+  const handleNextQuestion = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!interview || !currentAnswer.trim()) return;
     setSubmitting(true);
     try {
-      const q = interview.questions[currentQIndex];
-      await submitInterviewAnswer(q.id, currentAnswer);
+      const activeQuestion = interview.questions[currentQIndex];
+      await submitInterviewAnswer(activeQuestion.id, currentAnswer);
 
-      if (currentQIndex < interview.questions.length - 1) {
+      if (currentQIndex + 1 < interview.questions.length) {
         setCurrentQIndex(currentQIndex + 1);
         setCurrentAnswer('');
       } else {
-        // Conclude interview and evaluate
-        const report = await evaluateInterview(interview.id);
-        setEvaluation(report);
+        // Last question completed, trigger evaluation scorecard
+        const evalResult = await evaluateInterview(interview.id);
+        setEvaluation(evalResult);
+        setInterview(null);
       }
     } catch (err) {
-      console.error('Answer submission error:', err);
+      console.error('Failed to submit question answer:', err);
     } finally {
       setSubmitting(false);
     }
   };
 
+  const currentQuestion = interview?.questions[currentQIndex];
+
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Configuration Header */}
+    <div className="space-y-8 max-w-4xl">
+      {/* Interview Header */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-white">AI Technical Interview Simulation</h2>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Practice real-world engineering interviews tailored to your target role with instant hiring rubric feedback.

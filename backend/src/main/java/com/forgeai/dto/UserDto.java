@@ -15,6 +15,7 @@ public class UserDto {
     private Integer level;
     private Integer streak;
     private String role;
+    private Boolean isDemo;
     private LocalDateTime createdAt;
 
     public UserDto() {}
@@ -48,6 +49,9 @@ public class UserDto {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Boolean getIsDemo() { return isDemo; }
+    public void setIsDemo(Boolean isDemo) { this.isDemo = isDemo; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

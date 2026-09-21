@@ -29,11 +29,11 @@ spring:
 # Security, JWT, and External Integration Properties
 app:
   jwt:
-    # 256-bit secure secret key for signing JWT tokens
-    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-    expiration-ms: 86400000 # 24 hours
+    # 256-bit secure secret key for signing JWT tokens (injected via APP_JWT_SECRET)
+    secret: ${APP_JWT_SECRET:}
+    expiration-ms: ${APP_JWT_EXPIRATION_MS:86400000} # 24 hours
   cors:
-    allowed-origins: "http://localhost:3000,http://127.0.0.1:3000"
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
   ai:
     api-key: ${AI_API_KEY:}
     provider: ${AI_PROVIDER:mock} # mock | openai | gemini

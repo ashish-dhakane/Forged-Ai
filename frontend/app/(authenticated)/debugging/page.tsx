@@ -20,8 +20,10 @@ import {
 } from '../../../services/debuggingService';
 import { DebuggingChallenge } from '../../../types';
 import DemoBadge from '../../../components/layout/DemoBadge';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function DebuggingPage() {
+  const { user } = useAuth();
   const [challenges, setChallenges] = useState<DebuggingChallenge[]>([]);
   const [activeChallenge, setActiveChallenge] = useState<DebuggingChallenge | null>(null);
   const [userExplanation, setUserExplanation] = useState('');
@@ -58,25 +60,25 @@ export default function DebuggingPage() {
     setResponse(null);
   };
 
-  // Submits diagnosis and corrected code to backend evaluator.
+  // Submits the proposed code correction and diagnostic reasoning.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeChallenge || !userExplanation.trim() || !userCode.trim()) return;
+    if (!activeChallenge) return;
     setSubmitting(true);
     try {
-      const evalRes = await submitDebuggingFix(activeChallenge.id, userExplanation, userCode);
-      setResponse(evalRes);
+      const res = await submitDebuggingFix(activeChallenge.id, userExplanation, userCode);
+      setResponse(res);
     } catch (err) {
-      console.error('Submission failed:', err);
+      console.error('Submission error:', err);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Reveals progressive diagnostic hints.
-  const handleRevealHint = (idx: number) => {
-    if (!revealedHints.includes(idx)) {
-      setRevealedHints([...revealedHints, idx]);
+  // Reveals hint sequentially
+  const handleRevealHint = (hintIndex: number) => {
+    if (!revealedHints.includes(hintIndex)) {
+      setRevealedHints([...revealedHints, hintIndex]);
     }
   };
 
@@ -103,7 +105,7 @@ export default function DebuggingPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-white">Interactive Debugging Engine</h2>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Isolate defects across Python, TypeScript, Java, and Go. Explain the mechanism and submit clean fixes.

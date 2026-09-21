@@ -32,8 +32,22 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     });
 
     if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('forgeai_token');
+        localStorage.removeItem('forgeai_user');
+      }
+
       const errorBody = await response.json().catch(() => ({}));
-      const message = errorBody.message || errorBody.error || `HTTP ${response.status}: ${response.statusText}`;
+      let message = errorBody.message || errorBody.error;
+
+      if (!message && errorBody.errors && typeof errorBody.errors === 'object') {
+        message = Object.values(errorBody.errors).join(', ');
+      }
+
+      if (!message) {
+        message = `HTTP ${response.status}: ${response.statusText || 'Server Error'}`;
+      }
+
       throw new Error(message);
     }
 

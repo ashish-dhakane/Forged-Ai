@@ -95,9 +95,14 @@ public class RoadmapService {
 
     // Updates progress percentage and status for a specific roadmap milestone item.
     @Transactional
-    public RoadmapItem updateItemProgress(Long itemId, RoadmapProgressUpdateRequest request) {
+    public RoadmapItem updateItemProgress(Long userId, Long itemId, RoadmapProgressUpdateRequest request) {
         RoadmapItem item = roadmapItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Roadmap item not found: " + itemId));
+
+        if (userId != null && item.getRoadmap() != null && item.getRoadmap().getUser() != null &&
+                !item.getRoadmap().getUser().getId().equals(userId)) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to modify this roadmap item");
+        }
 
         item.setStatus(request.getStatus());
         item.setProgressPercentage(request.getProgressPercentage());

@@ -32,8 +32,9 @@ public class SettingsController {
     // Returns current developer platform configurations and integration states.
     @GetMapping
     public ResponseEntity<Map<String, Object>> getSettings(@AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
-        User user = userRepository.findById(userId).orElse(new User("Ashish Sharma", "demo@forgeai.dev", "", "ashish-dhakane"));
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         Map<String, Object> response = new HashMap<>();
         response.put("name", user.getName());
@@ -42,7 +43,7 @@ public class SettingsController {
         response.put("githubUsername", user.getGithubUsername() != null ? user.getGithubUsername() : "");
         response.put("hasGithubToken", (configuredGithubToken != null && !configuredGithubToken.isBlank()));
         response.put("hasAiApiKey", (configuredAiKey != null && !configuredAiKey.isBlank()));
-        response.put("demoModeActive", "demo@forgeai.dev".equals(user.getEmail()));
+        response.put("demoModeActive", "demo@forgeai.dev".equalsIgnoreCase(user.getEmail()));
 
         return ResponseEntity.ok(response);
     }
@@ -52,7 +53,7 @@ public class SettingsController {
     public ResponseEntity<Map<String, String>> updateSettings(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody SettingsUpdateRequest request) {
-        Long userId = userPrincipal != null ? userPrincipal.getId() : 1L;
+        Long userId = com.forgeai.security.SecurityUtils.getRequiredUserId(userPrincipal);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 

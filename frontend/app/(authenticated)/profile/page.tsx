@@ -67,7 +67,7 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-xl font-bold text-white tracking-tight">{profile.name}</h1>
-                <DemoBadge />
+                {profile.email === 'demo@forgeai.dev' && <DemoBadge />}
               </div>
               <p className="text-xs text-slate-400 mt-1 max-w-xl">{profile.bio}</p>
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">

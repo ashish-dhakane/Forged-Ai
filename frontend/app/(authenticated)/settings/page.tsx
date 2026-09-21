@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '../../../services/api';
 import DemoBadge from '../../../components/layout/DemoBadge';
+import { useAuth } from '../../../context/AuthContext';
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [githubUsername, setGithubUsername] = useState('');
@@ -87,7 +89,7 @@ export default function SettingsPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold text-white">Platform Settings & Integrations</h2>
-              <DemoBadge />
+              {user?.isDemo && <DemoBadge />}
             </div>
             <p className="text-xs text-slate-400 mt-1">
               Configure student profile metadata, GitHub access tokens, and toggle between Live and Demo modes.
